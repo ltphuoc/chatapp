@@ -33,7 +33,7 @@ class _LoginPageState extends State<LoginPage> {
           : SingleChildScrollView(
               child: Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 80),
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 40),
                 child: Form(
                     key: formKey,
                     child: Column(
@@ -101,6 +101,8 @@ class _LoginPageState extends State<LoginPage> {
                           width: double.infinity,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 20),
                                 primary: Theme.of(context).primaryColor,
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
@@ -116,7 +118,7 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                         const SizedBox(
-                          height: 10,
+                          height: 15,
                         ),
                         Text.rich(TextSpan(
                           text: "Don't have an account? ",
@@ -147,7 +149,7 @@ class _LoginPageState extends State<LoginPage> {
         _isLoading = true;
       });
       await authService
-          .loginWithUserNameandPassword(email, password)
+          .loginWithUserNameAndPassword(email, password)
           .then((value) async {
         if (value == true) {
           QuerySnapshot snapshot =

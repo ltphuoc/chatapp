@@ -161,7 +161,7 @@ class _GroupInfoPageState extends State<GroupInfoPage> {
                               .toUpperCase(),
                           style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 15,
+                              fontSize: 14,
                               fontWeight: FontWeight.bold),
                         ),
                       ),
@@ -172,13 +172,19 @@ class _GroupInfoPageState extends State<GroupInfoPage> {
                 },
               );
             } else {
-              return const Center(
-                child: Text("NO MEMBERS"),
+              return const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 5, vertical: 10),
+                child: Center(
+                  child: Text("NO MEMBERS"),
+                ),
               );
             }
           } else {
-            return const Center(
-              child: Text("NO MEMBERS"),
+            return const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 5, vertical: 10),
+              child: Center(
+                child: Text("NO MEMBERS"),
+              ),
             );
           }
         } else {

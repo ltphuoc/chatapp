@@ -31,7 +31,7 @@ class _GroupTitleState extends State<GroupTitle> {
             ));
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 5),
         child: ListTile(
           leading: CircleAvatar(
             radius: 30,
@@ -46,10 +46,6 @@ class _GroupTitleState extends State<GroupTitle> {
           title: Text(
             widget.groupName,
             style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          subtitle: Text(
-            "Join the conversation as ${widget.userName}",
-            style: const TextStyle(fontSize: 13),
           ),
         ),
       ),

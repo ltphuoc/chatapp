@@ -26,7 +26,6 @@ class _SearchPageState extends State<SearchPage> {
   void initState() {
     super.initState();
     getCurrentUserIdAndName();
-    initiateSearchMethod();
   }
 
   getCurrentUserIdAndName() async {
@@ -54,8 +53,9 @@ class _SearchPageState extends State<SearchPage> {
         backgroundColor: Theme.of(context).primaryColor,
         title: const Text(
           "Search",
+          textAlign: TextAlign.center,
           style: TextStyle(
-              fontSize: 27, fontWeight: FontWeight.bold, color: Colors.white),
+              fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
         ),
       ),
       body: Column(
@@ -73,7 +73,7 @@ class _SearchPageState extends State<SearchPage> {
                         border: InputBorder.none,
                         hintText: "Search groups....",
                         hintStyle:
-                            TextStyle(color: Colors.white, fontSize: 16)),
+                            TextStyle(color: Colors.white, fontSize: 14)),
                   ),
                 ),
                 GestureDetector(
@@ -107,18 +107,20 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   initiateSearchMethod() async {
-    setState(() {
-      isLoading = true;
-    });
-    await DatabaseService()
-        .searchByName(searchController.text)
-        .then((snapshot) {
+    if (searchController.text.isNotEmpty) {
       setState(() {
-        searchSnapshot = snapshot;
-        isLoading = false;
-        hasUserSearched = true;
+        isLoading = true;
       });
-    });
+      await DatabaseService()
+          .searchByName(searchController.text)
+          .then((snapshot) {
+        setState(() {
+          searchSnapshot = snapshot;
+          isLoading = false;
+          hasUserSearched = true;
+        });
+      });
+    }
   }
 
   groupList() {
@@ -139,9 +141,9 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   joinedOrNot(
-      String userName, String groupId, String groupname, String admin) async {
+      String userName, String groupId, String groupName, String admin) async {
     await DatabaseService(uid: user!.uid)
-        .isUserJoined(groupname, groupId, userName)
+        .isUserJoined(groupName, groupId, userName)
         .then((value) {
       setState(() {
         isJoined = value;

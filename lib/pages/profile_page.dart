@@ -74,8 +74,12 @@ class _ProfilePageState extends State<ProfilePage> {
                     context: context,
                     builder: (context) {
                       return AlertDialog(
-                        content: const Text("Are you sure to loggout"),
-                        title: const Text("Logout"),
+                        content: const Text("Are you sure to logout ?",
+                            textAlign: TextAlign.center),
+                        title: const Text(
+                          "Logout",
+                          textAlign: TextAlign.center,
+                        ),
                         actions: [
                           IconButton(
                               onPressed: () {
@@ -112,33 +116,27 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
       ),
       body: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 170),
+        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 40),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Icon(
-              Icons.account_circle,
-              size: 200,
-              color: Colors.grey[700],
-            ),
-            const SizedBox(
-              height: 15,
-            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Text("Full Name", style: TextStyle(fontSize: 17)),
-                Text(widget.userName, style: const TextStyle(fontSize: 17)),
+                const Text("Full Name", style: TextStyle(fontSize: 16)),
+                Text(widget.userName, style: const TextStyle(fontSize: 14)),
               ],
             ),
             const Divider(
-              height: 20,
+              height: 30,
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Text("Email", style: TextStyle(fontSize: 17)),
-                Text(widget.email, style: const TextStyle(fontSize: 17)),
+                const Text("Email", style: TextStyle(fontSize: 16)),
+                Text(widget.email, style: const TextStyle(fontSize: 14)),
               ],
             ),
           ],

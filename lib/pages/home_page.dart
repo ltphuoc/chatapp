@@ -69,7 +69,7 @@ class _HomePageState extends State<HomePage> {
                 onPressed: () {
                   nextScreen(context, const SearchPage());
                 },
-                icon: Icon(Icons.search))
+                icon: const Icon(Icons.search))
           ],
           centerTitle: true,
           backgroundColor: Theme.of(context).primaryColor,
@@ -105,16 +105,10 @@ class _HomePageState extends State<HomePage> {
                     const Text(
                       "Quản lý tài khoản của bạn",
                       textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 14),
                     ),
-                    // const Icon(Icons.info),
                   ],
                 )),
-
-            // Text(
-            //   userName,
-            //   textAlign: TextAlign.center,
-            //   style: const TextStyle(fontWeight: FontWeight.bold),
-            // ),
             const SizedBox(
               height: 30,
             ),
@@ -126,28 +120,11 @@ class _HomePageState extends State<HomePage> {
               selectedColor: Theme.of(context).primaryColor,
               selected: true,
               contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                  const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
               leading: const Icon(Icons.groups),
               title:
                   const Text("Groups", style: TextStyle(color: Colors.black)),
             ),
-            // ListTile(
-            //   onTap: () {
-            //     nextScreenReplace(
-            //         context,
-            //         ProfilePage(
-            //           userName: userName,
-            //           email: email,
-            //         ));
-            //   },
-            //   selectedColor: Theme.of(context).primaryColor,
-            //   selected: true,
-            //   contentPadding:
-            //       const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-            //   leading: const Icon(Icons.account_balance),
-            //   title:
-            //       const Text("Profile", style: TextStyle(color: Colors.black)),
-            // ),
             ListTile(
               onTap: () async {
                 showDialog(
@@ -155,8 +132,14 @@ class _HomePageState extends State<HomePage> {
                     context: context,
                     builder: (context) {
                       return AlertDialog(
-                        content: const Text("Are you sure to loggout"),
-                        title: const Text("Logout"),
+                        content: const Text(
+                          "Are you sure to logout ?",
+                          textAlign: TextAlign.center,
+                        ),
+                        title: const Text(
+                          "Logout",
+                          textAlign: TextAlign.center,
+                        ),
                         actions: [
                           IconButton(
                               onPressed: () {
@@ -184,7 +167,7 @@ class _HomePageState extends State<HomePage> {
               selectedColor: Theme.of(context).primaryColor,
               selected: true,
               contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                  const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
               leading: const Icon(Icons.exit_to_app),
               title:
                   const Text("Logout", style: TextStyle(color: Colors.black)),
@@ -217,7 +200,7 @@ class _HomePageState extends State<HomePage> {
             return AlertDialog(
               title: const Text(
                 "Create a group",
-                textAlign: TextAlign.left,
+                textAlign: TextAlign.center,
               ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -238,7 +221,7 @@ class _HomePageState extends State<HomePage> {
                               enabledBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
                                       color: Theme.of(context).primaryColor),
-                                  borderRadius: BorderRadius.circular(20)),
+                                  borderRadius: BorderRadius.circular(10)),
                               errorBorder: OutlineInputBorder(
                                   borderSide:
                                       const BorderSide(color: Colors.red),
@@ -256,7 +239,9 @@ class _HomePageState extends State<HomePage> {
                     Navigator.of(context).pop();
                   },
                   style: ElevatedButton.styleFrom(
-                      primary: Theme.of(context).primaryColor),
+                      primary: Theme.of(context).primaryColor,
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 15, horizontal: 15)),
                   child: const Text("CANCEL"),
                 ),
                 ElevatedButton(
@@ -278,7 +263,9 @@ class _HomePageState extends State<HomePage> {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                      primary: Theme.of(context).primaryColor),
+                      primary: Theme.of(context).primaryColor,
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 15, horizontal: 15)),
                   child: const Text("CREATE"),
                 )
               ],
@@ -296,6 +283,8 @@ class _HomePageState extends State<HomePage> {
           if (snapshot.data['groups'] != null) {
             if (snapshot.data['groups'].length != 0) {
               return ListView.builder(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
                 itemCount: snapshot.data['groups'].length,
                 itemBuilder: (context, index) {
                   int reverseIndex = snapshot.data['groups'].length - index - 1;
@@ -326,7 +315,7 @@ class _HomePageState extends State<HomePage> {
       padding: const EdgeInsets.symmetric(horizontal: 25),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           GestureDetector(
             onTap: () {
@@ -342,7 +331,7 @@ class _HomePageState extends State<HomePage> {
             height: 20,
           ),
           const Text(
-            "You've not joined any groups, tap on the add icon to create a group or also search from top search button.",
+            "No group",
             textAlign: TextAlign.center,
           )
         ],

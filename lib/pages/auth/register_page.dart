@@ -33,7 +33,7 @@ class _RegisterPageState extends State<RegisterPage> {
           : SingleChildScrollView(
               child: Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 80),
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 40),
                 child: Form(
                     key: formKey,
                     child: Column(
@@ -125,14 +125,18 @@ class _RegisterPageState extends State<RegisterPage> {
                           width: double.infinity,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 20),
                                 primary: Theme.of(context).primaryColor,
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(30))),
                             child: const Text(
                               "Register",
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 16),
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
                             ),
                             onPressed: () {
                               register();
@@ -140,7 +144,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                         ),
                         const SizedBox(
-                          height: 10,
+                          height: 15,
                         ),
                         Text.rich(TextSpan(
                           text: "Already have an account? ",
@@ -171,7 +175,7 @@ class _RegisterPageState extends State<RegisterPage> {
         _isLoading = true;
       });
       await authService
-          .registerUserWithEmailandPassword(fullName, email, password)
+          .registerUserWithEmailAndPassword(fullName, email, password)
           .then((value) async {
         if (value == true) {
           // saving the shared preference state
