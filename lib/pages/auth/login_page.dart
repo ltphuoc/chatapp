@@ -120,6 +120,38 @@ class _LoginPageState extends State<LoginPage> {
                         const SizedBox(
                           height: 15,
                         ),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                                side: BorderSide(width: 1.0,color:Colors.black),
+                                backgroundColor: Colors.white,
+                                padding:
+                                const EdgeInsets.symmetric(vertical: 20),
+                                primary: Theme.of(context).primaryColor,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30))),
+                            child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  Image.network('https://cdn-icons-png.flaticon.com/512/2991/2991148.png',width: 20),
+                                  const SizedBox(width: 10),
+                                  const Text(
+                                    "Sign In Google",
+                                    style:
+                                    TextStyle(color: Colors.black, fontSize: 16),
+                                  ),
+                                ]
+                            ),
+                            onPressed: () {
+                              loginGoogle();
+                            },
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 15,
+                        ),
                         Text.rich(TextSpan(
                           text: "Don't have an account? ",
                           style: const TextStyle(
@@ -168,5 +200,29 @@ class _LoginPageState extends State<LoginPage> {
         }
       });
     }
+  }
+  loginGoogle() async {
+      // setState(() {
+      //   _isLoading = true;
+      // });
+      await authService
+          .loginGoogle()
+          .then((value) async {
+        if (value == true) {
+          QuerySnapshot snapshot =
+          await DatabaseService(uid: FirebaseAuth.instance.currentUser!.uid)
+              .gettingUserData(email);
+          // saving the values to our shared preferences
+          await HelperFunctions.saveUserLoggedInStatus(true);
+          await HelperFunctions.saveUserEmailSF(email);
+          await HelperFunctions.saveUserNameSF(snapshot.docs[0]['fullName']);
+          nextScreenReplace(context, const HomePage());
+        } else {
+          showSnackbar(context, Colors.red, value);
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      });
   }
 }
