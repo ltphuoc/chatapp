@@ -20,22 +20,27 @@ class AuthService {
       return e.message;
     }
   }
-  Future signInWithGoogle() async {
-    final GoogleSignInAccount? googleUser = await GoogleSignIn(
-        scopes: <String>["email",]).signIn();
-    final GoogleSignInAuthentication googleAuth = await googleUser!.authentication;
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
-    return await FirebaseAuth.instance.signInWithCredential(credential);
-  }
-  Future loginGoogle() async {
-    try {
-      signInWithGoogle();
-      User user = (await signInWithGoogle())
-          .user!;
+  // Future signInWithGoogle() async {
+  //   final GoogleSignInAccount? googleUser = await GoogleSignIn(
+  //       scopes: <String>["email",]).signIn();
+  //   final GoogleSignInAuthentication googleAuth = await googleUser!.authentication;
+  //   final credential = GoogleAuthProvider.credential(
+  //     accessToken: googleAuth.accessToken,
+  //     idToken: googleAuth.idToken,
+  //   );
+  //   return await firebaseAuth.signInWithCredential(credential);
+  // }
 
+  Future signInWithGoogle() async {
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      final GoogleSignInAuthentication googleAuth = await googleUser!.authentication;
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+      User user = (await firebaseAuth.signInWithCredential(credential))
+          .user!;
       if (user != null) {
         return true;
       }

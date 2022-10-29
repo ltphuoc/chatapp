@@ -202,20 +202,17 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
   loginGoogle() async {
-      // setState(() {
-      //   _isLoading = true;
-      // });
+      setState(() {
+        _isLoading = true;
+      });
       await authService
-          .loginGoogle()
+          .signInWithGoogle()
           .then((value) async {
         if (value == true) {
-          QuerySnapshot snapshot =
-          await DatabaseService(uid: FirebaseAuth.instance.currentUser!.uid)
-              .gettingUserData(email);
           // saving the values to our shared preferences
           await HelperFunctions.saveUserLoggedInStatus(true);
-          await HelperFunctions.saveUserEmailSF(email);
-          await HelperFunctions.saveUserNameSF(snapshot.docs[0]['fullName']);
+          await HelperFunctions.saveUserEmailSF(FirebaseAuth.instance.currentUser!.email.toString());
+          await HelperFunctions.saveUserNameSF(FirebaseAuth.instance.currentUser!.displayName.toString());
           nextScreenReplace(context, const HomePage());
         } else {
           showSnackbar(context, Colors.red, value);
