@@ -1,6 +1,7 @@
 import 'package:chatapp/helper/helper_function.dart';
 import 'package:chatapp/pages/auth/register_page.dart';
 import 'package:chatapp/pages/home_page.dart';
+import 'package:chatapp/provider/google_sign_in.dart';
 import 'package:chatapp/service/auth_service.dart';
 import 'package:chatapp/service/database_service.dart';
 import 'package:chatapp/widgets/widgets.dart';
@@ -8,6 +9,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -120,34 +123,23 @@ class _LoginPageState extends State<LoginPage> {
                         const SizedBox(
                           height: 15,
                         ),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                                side: BorderSide(width: 1.0,color:Colors.black),
-                                backgroundColor: Colors.white,
-                                padding:
-                                const EdgeInsets.symmetric(vertical: 20),
-                                primary: Theme.of(context).primaryColor,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30))),
-                            child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  Image.network('https://cdn-icons-png.flaticon.com/512/2991/2991148.png',width: 20),
-                                  const SizedBox(width: 10),
-                                  const Text(
-                                    "Sign In Google",
-                                    style:
-                                    TextStyle(color: Colors.black, fontSize: 16),
-                                  ),
-                                ]
-                            ),
-                            onPressed: () {
-                              loginGoogle();
-                            },
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            minimumSize: const Size(double.infinity, 60),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                                side: const BorderSide(width: 1)),
                           ),
+                          icon: const FaIcon(FontAwesomeIcons.google,
+                              color: Colors.red),
+                          label: const Text(
+                            "Sign in with Google",
+                            style: TextStyle(color: Colors.black, fontSize: 16),
+                          ),
+                          onPressed: () {
+                            loginGoogle();
+                          },
                         ),
                         const SizedBox(
                           height: 15,
@@ -201,25 +193,27 @@ class _LoginPageState extends State<LoginPage> {
       });
     }
   }
+
   loginGoogle() async {
-      setState(() {
-        _isLoading = true;
-      });
-      await authService
-          .signInWithGoogle()
-          .then((value) async {
-        if (value == true) {
-          // saving the values to our shared preferences
-          await HelperFunctions.saveUserLoggedInStatus(true);
-          await HelperFunctions.saveUserEmailSF(FirebaseAuth.instance.currentUser!.email.toString());
-          await HelperFunctions.saveUserNameSF(FirebaseAuth.instance.currentUser!.displayName.toString());
-          nextScreenReplace(context, const HomePage());
-        } else {
-          showSnackbar(context, Colors.red, value);
-          setState(() {
-            _isLoading = false;
-          });
-        }
-      });
+    setState(() {
+      _isLoading = true;
+    });
+    final provider = Provider.of<GoogleSignInProvider>(context, listen: false);
+    await provider.googleLogin().then((value) async {
+      if (value == true) {
+        // saving the values to our shared preferences
+        await HelperFunctions.saveUserLoggedInStatus(true);
+        await HelperFunctions.saveUserEmailSF(
+            FirebaseAuth.instance.currentUser!.email.toString());
+        await HelperFunctions.saveUserNameSF(
+            FirebaseAuth.instance.currentUser!.displayName.toString());
+        nextScreenReplace(context, const HomePage());
+      } else {
+        showSnackbar(context, Colors.red, value);
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    });
   }
 }
