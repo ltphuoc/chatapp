@@ -139,27 +139,31 @@ class _ChatPageState extends State<ChatPage> {
                     );
                   } else {
                     var parseMsg = snapshot.data.docs[index]['message'];
-                    switch (parseMsg) {
-                      case "<3":
-                        var emoji = parser.info('heart');
-                        parseMsg = emoji.code;
-                        break;
-                      case ":)":
-                      case "=)":
-                        var emoji = parser.info("smile");
-                        parseMsg = emoji.code;
-                        break;
-                      case ":(":
-                      case "=(":
-                        var emoji = parser.info("cry");
-                        parseMsg = emoji.code;
-                        break;
-                      default:
-                        parseMsg = parseMsg;
+                    print(parseMsg);
+                    var splitMsg = parseMsg.split(" ");
+                    for (int i = 0; i < splitMsg.length; i++) {
+                      switch (splitMsg[i]) {
+                        case "<3":
+                          var emoji = parser.info('heart');
+                          splitMsg[i] = emoji.code;
+                          break;
+                        case ":)":
+                        case "=)":
+                          var emoji = parser.info("smile");
+                          splitMsg[i] = emoji.code;
+                          break;
+                        case ":(":
+                        case "=(":
+                          var emoji = parser.info("cry");
+                          splitMsg[i] = emoji.code;
+                          break;
+                        default:
+                          splitMsg[i] = splitMsg[i];
+                      }
                     }
                     return MessageTitle(
                         time: DateTime.now().toString().substring(10, 16),
-                        message: parseMsg,
+                        message: splitMsg.join(" "),
                         sender: snapshot.data.docs[index]['sender'],
                         sentByMe: widget.userName ==
                             snapshot.data.docs[index]['sender']);
