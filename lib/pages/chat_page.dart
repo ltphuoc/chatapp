@@ -4,6 +4,7 @@ import 'package:chatapp/widgets/message_title.dart';
 import 'package:chatapp/widgets/widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_emoji/flutter_emoji.dart';
 
 class ChatPage extends StatefulWidget {
   final String groupId;
@@ -24,6 +25,12 @@ class _ChatPageState extends State<ChatPage> {
   Stream<QuerySnapshot>? chats;
   TextEditingController messageController = TextEditingController();
   String admin = "";
+  ScrollController _scrollController = new ScrollController();
+
+  var parser = EmojiParser();
+  // var heart = Emoji('heart', '❤️');
+  // var smile = Emoji("smile", '🙂');
+  // var cry = Emoji("cry", '😔');
 
   @override
   void initState() {
@@ -123,13 +130,40 @@ class _ChatPageState extends State<ChatPage> {
       builder: (context, AsyncSnapshot snapshot) {
         return snapshot.hasData
             ? ListView.builder(
+                controller: _scrollController,
                 itemCount: snapshot.data.docs.length,
                 itemBuilder: (context, index) {
-                  return MessageTitle(
-                      message: snapshot.data.docs[index]['message'],
-                      sender: snapshot.data.docs[index]['sender'],
-                      sentByMe: widget.userName ==
-                          snapshot.data.docs[index]['sender']);
+                  if (index == snapshot.data.docs.length) {
+                    return Container(
+                      height: 70,
+                    );
+                  } else {
+                    var parseMsg = snapshot.data.docs[index]['message'];
+                    switch (parseMsg) {
+                      case "<3":
+                        var emoji = parser.info('heart');
+                        parseMsg = emoji.code;
+                        break;
+                      case ":)":
+                      case "=)":
+                        var emoji = parser.info("smile");
+                        parseMsg = emoji.code;
+                        break;
+                      case ":(":
+                      case "=(":
+                        var emoji = parser.info("cry");
+                        parseMsg = emoji.code;
+                        break;
+                      default:
+                        parseMsg = parseMsg;
+                    }
+                    return MessageTitle(
+                        time: DateTime.now().toString().substring(10, 16),
+                        message: parseMsg,
+                        sender: snapshot.data.docs[index]['sender'],
+                        sentByMe: widget.userName ==
+                            snapshot.data.docs[index]['sender']);
+                  }
                 },
               )
             : Container();
@@ -149,6 +183,9 @@ class _ChatPageState extends State<ChatPage> {
       setState(() {
         messageController.clear();
       });
+    }
+    if (_scrollController.hasClients) {
+      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
     }
   }
 }

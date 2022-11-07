@@ -103,7 +103,7 @@ class _HomePageState extends State<HomePage> {
                       height: 5,
                     ),
                     const Text(
-                      "Quản lý tài khoản của bạn",
+                      "Manage your profile",
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 14),
                     ),

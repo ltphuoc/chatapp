@@ -3,13 +3,15 @@ import 'package:flutter/material.dart';
 class MessageTitle extends StatefulWidget {
   final String message;
   final String sender;
+  final String time;
   final bool sentByMe;
 
   const MessageTitle(
       {Key? key,
       required this.message,
       required this.sender,
-      required this.sentByMe})
+      required this.sentByMe,
+      required this.time})
       : super(key: key);
 
   @override
@@ -64,7 +66,12 @@ class _MessageTitleState extends State<MessageTitle> {
             ),
             Text(widget.message,
                 textAlign: TextAlign.start,
-                style: const TextStyle(fontSize: 16, color: Colors.white))
+                style: const TextStyle(fontSize: 16, color: Colors.white)),
+            const SizedBox(
+              height: 8,
+            ),
+            Text(widget.time,
+                style: const TextStyle(fontSize: 12, color: Colors.grey))
           ],
         ),
       ),
