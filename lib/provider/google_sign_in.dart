@@ -1,3 +1,4 @@
+import 'package:chatapp/service/database_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -23,6 +24,9 @@ class GoogleSignInProvider extends ChangeNotifier {
       User user =
           (await FirebaseAuth.instance.signInWithCredential(credential)).user!;
       if (user != null) {
+        String fullName = user.displayName.toString();
+        String email = user.email.toString();
+        await DatabaseService(uid: user.uid).savingUserData(fullName, email);
         return true;
       }
       notifyListeners();
