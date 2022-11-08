@@ -124,8 +124,13 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   groupList() {
-    return hasUserSearched
-        ? ListView.builder(
+    DatabaseService().getAllGroup().then((snapshot){
+      setState(() {
+        searchSnapshot = snapshot;
+      });
+    });
+    return searchSnapshot != null ?
+         ListView.builder(
             shrinkWrap: true,
             itemCount: searchSnapshot!.docs.length,
             itemBuilder: (context, index) {
@@ -136,8 +141,7 @@ class _SearchPageState extends State<SearchPage> {
                 searchSnapshot!.docs[index]['admin'],
               );
             },
-          )
-        : Container();
+          ) : Container();
   }
 
   joinedOrNot(
