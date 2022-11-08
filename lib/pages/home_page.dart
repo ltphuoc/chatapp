@@ -22,6 +22,8 @@ class _HomePageState extends State<HomePage> {
 
   AuthService authService = AuthService();
   Stream? groups;
+  bool isPrivate = false;
+  String? enrollKey;
   bool _isLoading = false;
   String groupName = "";
   @override
@@ -210,26 +212,70 @@ class _HomePageState extends State<HomePage> {
                           child: CircularProgressIndicator(
                               color: Theme.of(context).primaryColor),
                         )
-                      : TextField(
-                          onChanged: (val) {
-                            setState(() {
-                              groupName = val;
-                            });
-                          },
-                          style: const TextStyle(color: Colors.black),
-                          decoration: InputDecoration(
-                              enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(
-                                      color: Theme.of(context).primaryColor),
-                                  borderRadius: BorderRadius.circular(10)),
-                              errorBorder: OutlineInputBorder(
-                                  borderSide:
-                                      const BorderSide(color: Colors.red),
-                                  borderRadius: BorderRadius.circular(20)),
-                              focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(
-                                      color: Theme.of(context).primaryColor),
-                                  borderRadius: BorderRadius.circular(20))),
+                      : Column(
+                          children: [
+                            TextField(
+                              onChanged: (val) {
+                                setState(() {
+                                  groupName = val;
+                                });
+                              },
+                              style: const TextStyle(color: Colors.black),
+                              decoration: InputDecoration(
+                                  hintText: "Group Name",
+                                  enabledBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                          color:
+                                              Theme.of(context).primaryColor),
+                                      borderRadius: BorderRadius.circular(10)),
+                                  errorBorder: OutlineInputBorder(
+                                      borderSide:
+                                          const BorderSide(color: Colors.red),
+                                      borderRadius: BorderRadius.circular(20)),
+                                  focusedBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                          color:
+                                              Theme.of(context).primaryColor),
+                                      borderRadius: BorderRadius.circular(20))),
+                            ),
+                            CheckboxListTile(
+                                title: Text("Private Group"),
+                                value: isPrivate,
+                                onChanged: (value) {
+                                  setState(() {
+                                    isPrivate = value!;
+                                  });
+                                }),
+                            isPrivate == true
+                                ? TextField(
+                                    onChanged: (val) {
+                                      setState(() {
+                                        enrollKey = val;
+                                      });
+                                    },
+                                    style: const TextStyle(color: Colors.black),
+                                    decoration: InputDecoration(
+                                        hintText: "Enroll Key",
+                                        enabledBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                color: Theme.of(context)
+                                                    .primaryColor),
+                                            borderRadius:
+                                                BorderRadius.circular(10)),
+                                        errorBorder: OutlineInputBorder(
+                                            borderSide: const BorderSide(
+                                                color: Colors.red),
+                                            borderRadius:
+                                                BorderRadius.circular(20)),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                color: Theme.of(context)
+                                                    .primaryColor),
+                                            borderRadius:
+                                                BorderRadius.circular(20))),
+                                  )
+                                : Center()
+                          ],
                         ),
                 ],
               ),
@@ -252,10 +298,16 @@ class _HomePageState extends State<HomePage> {
                       });
                       DatabaseService(
                               uid: FirebaseAuth.instance.currentUser!.uid)
-                          .createGroup(userName,
-                              FirebaseAuth.instance.currentUser!.uid, groupName)
+                          .createGroup(
+                              userName,
+                              FirebaseAuth.instance.currentUser!.uid,
+                              groupName,
+                              isPrivate,
+                              enrollKey)
                           .whenComplete(() {
                         _isLoading = false;
+                        isPrivate = false;
+                        enrollKey = null;
                       });
                       Navigator.of(context).pop();
                       showSnackbar(
