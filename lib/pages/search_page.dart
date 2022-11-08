@@ -17,6 +17,7 @@ class _SearchPageState extends State<SearchPage> {
   TextEditingController searchController = TextEditingController();
   bool isLoading = false;
   QuerySnapshot? searchSnapshot;
+  QuerySnapshot? listSnapshot;
   bool hasUserSearched = false;
   String userName = "";
   bool isJoined = false;
@@ -67,6 +68,11 @@ class _SearchPageState extends State<SearchPage> {
               children: [
                 Expanded(
                   child: TextField(
+                    onChanged: (value) {
+                      if (value.isEmpty){
+                        hasUserSearched = false;
+                      }
+                    },
                     controller: searchController,
                     style: const TextStyle(color: Colors.white),
                     decoration: const InputDecoration(
@@ -126,10 +132,10 @@ class _SearchPageState extends State<SearchPage> {
   groupList() {
     DatabaseService().getAllGroup().then((snapshot){
       setState(() {
-        searchSnapshot = snapshot;
+        listSnapshot = snapshot;
       });
     });
-    return searchSnapshot != null ?
+    return hasUserSearched ?
          ListView.builder(
             shrinkWrap: true,
             itemCount: searchSnapshot!.docs.length,
@@ -139,6 +145,18 @@ class _SearchPageState extends State<SearchPage> {
                 searchSnapshot!.docs[index]['groupId'],
                 searchSnapshot!.docs[index]['groupName'],
                 searchSnapshot!.docs[index]['admin'],
+              );
+            },
+          ) : listSnapshot != null ?
+          ListView.builder(
+            shrinkWrap: true,
+            itemCount: listSnapshot!.docs.length,
+            itemBuilder: (context, index) {
+              return groupTile(
+                userName,
+                listSnapshot!.docs[index]['groupId'],
+                listSnapshot!.docs[index]['groupName'],
+                listSnapshot!.docs[index]['admin'],
               );
             },
           ) : Container();
