@@ -202,31 +202,32 @@ class _SearchPageState extends State<SearchPage> {
           "Admin: ${getName(admin)} ${isPrivate ? "(Private)" : "Public"} "),
       trailing: InkWell(
         onTap: () async {
-          if (isPrivate) {
+          if (isPrivate && isJoined == false) {
             showEnrollDialog(context, groupId, userName, groupName, enrollKey);
-          } else {
-            await DatabaseService(uid: user!.uid)
-                .toggleGroupJoin(groupId, userName, groupName);
-            if (isJoined) {
-              setState(() {
-                isJoined = !isJoined;
-              });
-              showSnackbar(
-                  context, Colors.green, "Successfully joined he group");
-              Future.delayed(const Duration(seconds: 2), () {
-                nextScreen(
-                    context,
-                    ChatPage(
-                        groupId: groupId,
-                        groupName: groupName,
-                        userName: userName));
-              });
-            } else {
-              setState(() {
-                isJoined = !isJoined;
-                showSnackbar(context, Colors.red, "Left the group $groupName");
-              });
-            }
+
+            // } else {
+            //   await DatabaseService(uid: user!.uid)
+            //       .toggleGroupJoin(groupId, userName, groupName);
+            //   if (isJoined) {
+            //     // setState(() {
+            //     //   isJoined = !isJoined;
+            //     // });
+            //     showSnackbar(
+            //         context, Colors.green, "Successfully joined he group");
+            //     Future.delayed(const Duration(seconds: 2), () {
+            //       nextScreen(
+            //           context,
+            //           ChatPage(
+            //               groupId: groupId,
+            //               groupName: groupName,
+            //               userName: userName));
+            //     });
+            //   } else {
+            //     // setState(() {
+            //     //   isJoined = !isJoined;
+            //     //   showSnackbar(context, Colors.red, "Left the group $groupName");
+            //     // });
+            //   }
           }
         },
         child: isJoined
@@ -315,10 +316,20 @@ class _SearchPageState extends State<SearchPage> {
                   onPressed: () async {
                     if (enrollKey == enrollKeyGroup) {
                       await DatabaseService(uid: user!.uid)
-                          .toggleGroupJoin(groupId, userName, groupName);
-                      Navigator.of(context).pop();
-                      showSnackbar(
-                          context, Colors.green, "Group created successfully.");
+                          .toggleGroupJoin(groupId, userName, groupName)
+                          .whenComplete(() {
+                        Navigator.of(context).pop();
+                        showSnackbar(
+                            context, Colors.green, "Join successfully.");
+                      });
+                      Future.delayed(const Duration(seconds: 2), () {
+                        nextScreen(
+                            context,
+                            ChatPage(
+                                groupId: groupId,
+                                groupName: groupName,
+                                userName: userName));
+                      });
                     } else {
                       showSnackbar(context, Colors.red,
                           "Enroll key is incorrect. Please try again.");
