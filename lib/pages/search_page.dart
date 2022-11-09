@@ -1,3 +1,5 @@
+import 'dart:html';
+
 import 'package:chatapp/helper/helper_function.dart';
 import 'package:chatapp/pages/chat_page.dart';
 import 'package:chatapp/service/database_service.dart';
@@ -22,6 +24,7 @@ class _SearchPageState extends State<SearchPage> {
   String userName = "";
   bool isJoined = false;
   User? user;
+  String? enrollKey;
 
   @override
   void initState() {
@@ -69,7 +72,7 @@ class _SearchPageState extends State<SearchPage> {
                 Expanded(
                   child: TextField(
                     onChanged: (value) {
-                      if (value.isEmpty){
+                      if (value.isEmpty) {
                         hasUserSearched = false;
                       }
                     },
@@ -130,13 +133,13 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   groupList() {
-    DatabaseService().getAllGroup().then((snapshot){
+    DatabaseService().getAllGroup().then((snapshot) {
       setState(() {
         listSnapshot = snapshot;
       });
     });
-    return hasUserSearched ?
-         ListView.builder(
+    return hasUserSearched
+        ? ListView.builder(
             shrinkWrap: true,
             itemCount: searchSnapshot!.docs.length,
             itemBuilder: (context, index) {
@@ -145,25 +148,31 @@ class _SearchPageState extends State<SearchPage> {
                 searchSnapshot!.docs[index]['groupId'],
                 searchSnapshot!.docs[index]['groupName'],
                 searchSnapshot!.docs[index]['admin'],
+                listSnapshot!.docs[index]['isPrivate'],
+                listSnapshot!.docs[index]['enrollKey'],
               );
             },
-          ) : listSnapshot != null ?
-          ListView.builder(
-            shrinkWrap: true,
-            itemCount: listSnapshot!.docs.length,
-            itemBuilder: (context, index) {
-              return groupTile(
-                userName,
-                listSnapshot!.docs[index]['groupId'],
-                listSnapshot!.docs[index]['groupName'],
-                listSnapshot!.docs[index]['admin'],
-              );
-            },
-          ) : Container();
+          )
+        : listSnapshot != null
+            ? ListView.builder(
+                shrinkWrap: true,
+                itemCount: listSnapshot!.docs.length,
+                itemBuilder: (context, index) {
+                  return groupTile(
+                    userName,
+                    listSnapshot!.docs[index]['groupId'],
+                    listSnapshot!.docs[index]['groupName'],
+                    listSnapshot!.docs[index]['admin'],
+                    listSnapshot!.docs[index]['isPrivate'],
+                    listSnapshot!.docs[index]['enrollKey'],
+                  );
+                },
+              )
+            : Container();
   }
 
-  joinedOrNot(
-      String userName, String groupId, String groupName, String admin) async {
+  joinedOrNot(String userName, String groupId, String groupName, String admin,
+      bool isPrivate) async {
     await DatabaseService(uid: user!.uid)
         .isUserJoined(groupName, groupId, userName)
         .then((value) {
@@ -173,10 +182,10 @@ class _SearchPageState extends State<SearchPage> {
     });
   }
 
-  Widget groupTile(
-      String userName, String groupId, String groupName, String admin) {
+  Widget groupTile(String userName, String groupId, String groupName,
+      String admin, bool isPrivate, String enrollKey) {
     // function to check whether user already exists in group
-    joinedOrNot(userName, groupId, groupName, admin);
+    joinedOrNot(userName, groupId, groupName, admin, isPrivate);
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       leading: CircleAvatar(
@@ -189,29 +198,35 @@ class _SearchPageState extends State<SearchPage> {
       ),
       title:
           Text(groupName, style: const TextStyle(fontWeight: FontWeight.w600)),
-      subtitle: Text("Admin: ${getName(admin)}"),
+      subtitle: Text(
+          "Admin: ${getName(admin)} ${isPrivate ? "(Private)" : "Public"} "),
       trailing: InkWell(
         onTap: () async {
-          await DatabaseService(uid: user!.uid)
-              .toggleGroupJoin(groupId, userName, groupName);
-          if (isJoined) {
-            setState(() {
-              isJoined = !isJoined;
-            });
-            showSnackbar(context, Colors.green, "Successfully joined he group");
-            Future.delayed(const Duration(seconds: 2), () {
-              nextScreen(
-                  context,
-                  ChatPage(
-                      groupId: groupId,
-                      groupName: groupName,
-                      userName: userName));
-            });
+          if (isPrivate) {
+            showEnrollDialog(context, groupId, userName, groupName, enrollKey);
           } else {
-            setState(() {
-              isJoined = !isJoined;
-              showSnackbar(context, Colors.red, "Left the group $groupName");
-            });
+            await DatabaseService(uid: user!.uid)
+                .toggleGroupJoin(groupId, userName, groupName);
+            if (isJoined) {
+              setState(() {
+                isJoined = !isJoined;
+              });
+              showSnackbar(
+                  context, Colors.green, "Successfully joined he group");
+              Future.delayed(const Duration(seconds: 2), () {
+                nextScreen(
+                    context,
+                    ChatPage(
+                        groupId: groupId,
+                        groupName: groupName,
+                        userName: userName));
+              });
+            } else {
+              setState(() {
+                isJoined = !isJoined;
+                showSnackbar(context, Colors.red, "Left the group $groupName");
+              });
+            }
           }
         },
         child: isJoined
@@ -240,5 +255,84 @@ class _SearchPageState extends State<SearchPage> {
               ),
       ),
     );
+  }
+
+  void showEnrollDialog(
+    BuildContext context,
+    String groupId,
+    String userName,
+    String groupName,
+    String enrollKeyGroup,
+  ) {
+    showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (context) {
+          return StatefulBuilder(builder: ((context, setState) {
+            return AlertDialog(
+              title: Text(
+                'Join $groupName',
+                textAlign: TextAlign.center,
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    onChanged: (val) {
+                      setState(() {
+                        enrollKey = val;
+                      });
+                    },
+                    style: const TextStyle(color: Colors.black),
+                    decoration: InputDecoration(
+                        hintText: "Enroll key",
+                        enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: Theme.of(context).primaryColor),
+                            borderRadius: BorderRadius.circular(10)),
+                        errorBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(color: Colors.red),
+                            borderRadius: BorderRadius.circular(20)),
+                        focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: Theme.of(context).primaryColor),
+                            borderRadius: BorderRadius.circular(20))),
+                  ),
+                ],
+              ),
+              actions: [
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  style: ElevatedButton.styleFrom(
+                      primary: Theme.of(context).primaryColor,
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 15, horizontal: 15)),
+                  child: const Text("CANCEL"),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (enrollKey == enrollKeyGroup) {
+                      await DatabaseService(uid: user!.uid)
+                          .toggleGroupJoin(groupId, userName, groupName);
+                      Navigator.of(context).pop();
+                      showSnackbar(
+                          context, Colors.green, "Group created successfully.");
+                    } else {
+                      showSnackbar(context, Colors.red,
+                          "Enroll key is incorrect. Please try again.");
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                      primary: Theme.of(context).primaryColor,
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 15, horizontal: 15)),
+                  child: const Text("JOIN"),
+                )
+              ],
+            );
+          }));
+        });
   }
 }
