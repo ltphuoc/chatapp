@@ -89,8 +89,19 @@ class DatabaseService {
   }
 
   //get all
-  getAllGroup() {
-    return groupCollection.get();
+  getAllGroup(String name) {
+    if (name == '') {
+      return groupCollection.get();
+    } else {
+      return groupCollection
+          .where(
+            "groupName",
+            isGreaterThanOrEqualTo: name,
+            isLessThan: name.substring(0, name.length - 1) +
+                String.fromCharCode(name.codeUnitAt(name.length - 1) + 1),
+          )
+          .get();
+    }
   }
 
   // function -> bool

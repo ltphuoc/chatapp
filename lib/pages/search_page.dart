@@ -17,7 +17,7 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   TextEditingController searchController = TextEditingController();
-  bool isLoading = false;
+  bool isLoading = true;
   QuerySnapshot? searchSnapshot;
   QuerySnapshot? listSnapshot;
   bool hasUserSearched = false;
@@ -33,12 +33,12 @@ class _SearchPageState extends State<SearchPage> {
     getListGroup();
   }
 
-  getListGroup() async {
-    DatabaseService().getAllGroup().then((snapshot) {
+  getListGroup({String name = ''}) async {
+    await DatabaseService().getAllGroup(name).then((snapshot) {
       setState(() {
         listSnapshot = snapshot;
+        isLoading = false;
       });
-      print("listSnapshot: ${listSnapshot!.docs.length}");
     });
   }
 
@@ -74,7 +74,6 @@ class _SearchPageState extends State<SearchPage> {
       ),
       body: Container(
         width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height,
         child: Column(
           children: [
             Container(
@@ -85,8 +84,10 @@ class _SearchPageState extends State<SearchPage> {
                   Expanded(
                     child: TextField(
                       onChanged: (value) {
-                        if (value.isEmpty) {
-                          hasUserSearched = false;
+                        if (value.isNotEmpty) {
+                          getListGroup(name: value);
+                        } else {
+                          getListGroup();
                         }
                       },
                       controller: searchController,
@@ -100,7 +101,7 @@ class _SearchPageState extends State<SearchPage> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      initiateSearchMethod();
+                      // initiateSearchMethod();
                     },
                     child: Container(
                       width: 40,
@@ -156,20 +157,22 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   groupList() {
-    return ListView.builder(
-      shrinkWrap: true,
-      itemCount: listSnapshot != null ? listSnapshot!.docs.length : 0,
-      itemBuilder: (context, index) {
-        return groupTile(
-          userName,
-          listSnapshot!.docs[index]['groupId'],
-          listSnapshot!.docs[index]['groupName'],
-          listSnapshot!.docs[index]['admin'],
-          listSnapshot!.docs[index]['isPrivate'],
-          listSnapshot!.docs[index]['enrollKey'],
-          listSnapshot!.docs[index]['members'],
-        );
-      },
+    return Expanded(
+      child: ListView.builder(
+        shrinkWrap: true,
+        itemCount: listSnapshot!.docs.length,
+        itemBuilder: (context, index) {
+          return groupTile(
+            userName,
+            listSnapshot!.docs[index]['groupId'],
+            listSnapshot!.docs[index]['groupName'],
+            listSnapshot!.docs[index]['admin'],
+            listSnapshot!.docs[index]['isPrivate'],
+            listSnapshot!.docs[index]['enrollKey'],
+            listSnapshot!.docs[index]['members'],
+          );
+        },
+      ),
     );
   }
 
@@ -185,9 +188,8 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Widget groupTile(String userName, String groupId, String groupName,
-      String admin, bool isPrivate, String enrollKey, List<dynamic> members) {
+      String admin, bool isPrivate, String? enrollKey, List<dynamic> members) {
     // function to check whether user already exists in group
-    joinedOrNot(userName, groupId, groupName, admin, isPrivate);
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       leading: CircleAvatar(
@@ -207,7 +209,7 @@ class _SearchPageState extends State<SearchPage> {
             if (!isUserJoind(user!.uid, members)) {
               if (isPrivate == true) {
                 showEnrollDialog(
-                    context, groupId, userName, groupName, enrollKey);
+                    context, groupId, userName, groupName, enrollKey ?? '');
               } else {
                 await DatabaseService(uid: user!.uid)
                     .toggleGroupJoin(groupId, userName, groupName);
