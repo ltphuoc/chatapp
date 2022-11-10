@@ -30,6 +30,16 @@ class _SearchPageState extends State<SearchPage> {
   void initState() {
     super.initState();
     getCurrentUserIdAndName();
+    getListGroup();
+  }
+
+  getListGroup() async {
+    DatabaseService().getAllGroup().then((snapshot) {
+      setState(() {
+        listSnapshot = snapshot;
+      });
+      print("listSnapshot: ${listSnapshot!.docs.length}");
+    });
   }
 
   getCurrentUserIdAndName() async {
@@ -62,55 +72,59 @@ class _SearchPageState extends State<SearchPage> {
               fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
         ),
       ),
-      body: Column(
-        children: [
-          Container(
-            color: Theme.of(context).primaryColor,
-            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    onChanged: (value) {
-                      if (value.isEmpty) {
-                        hasUserSearched = false;
-                      }
-                    },
-                    controller: searchController,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        hintText: "Search groups....",
-                        hintStyle:
-                            TextStyle(color: Colors.white, fontSize: 14)),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    initiateSearchMethod();
-                  },
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(40)),
-                    child: const Icon(
-                      Icons.search,
-                      color: Colors.white,
+      body: Container(
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height,
+        child: Column(
+          children: [
+            Container(
+              color: Theme.of(context).primaryColor,
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      onChanged: (value) {
+                        if (value.isEmpty) {
+                          hasUserSearched = false;
+                        }
+                      },
+                      controller: searchController,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          hintText: "Search groups....",
+                          hintStyle:
+                              TextStyle(color: Colors.white, fontSize: 14)),
                     ),
                   ),
-                )
-              ],
+                  GestureDetector(
+                    onTap: () {
+                      initiateSearchMethod();
+                    },
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(40)),
+                      child: const Icon(
+                        Icons.search,
+                        color: Colors.white,
+                      ),
+                    ),
+                  )
+                ],
+              ),
             ),
-          ),
-          isLoading
-              ? Center(
-                  child: CircularProgressIndicator(
-                      color: Theme.of(context).primaryColor),
-                )
-              : groupList(),
-        ],
+            isLoading
+                ? Center(
+                    child: CircularProgressIndicator(
+                        color: Theme.of(context).primaryColor),
+                  )
+                : groupList(),
+          ],
+        ),
       ),
     );
   }
@@ -132,43 +146,31 @@ class _SearchPageState extends State<SearchPage> {
     }
   }
 
+  bool isUserJoind(String id, List<dynamic> list) {
+    for (int i = 0; i < list.length; i++) {
+      if (list[i] == id) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   groupList() {
-    DatabaseService().getAllGroup().then((snapshot) {
-      setState(() {
-        listSnapshot = snapshot;
-      });
-    });
-    return hasUserSearched
-        ? ListView.builder(
-            shrinkWrap: true,
-            itemCount: searchSnapshot!.docs.length,
-            itemBuilder: (context, index) {
-              return groupTile(
-                userName,
-                searchSnapshot!.docs[index]['groupId'],
-                searchSnapshot!.docs[index]['groupName'],
-                searchSnapshot!.docs[index]['admin'],
-                listSnapshot!.docs[index]['isPrivate'],
-                listSnapshot!.docs[index]['enrollKey'],
-              );
-            },
-          )
-        : listSnapshot != null
-            ? ListView.builder(
-                shrinkWrap: true,
-                itemCount: listSnapshot!.docs.length,
-                itemBuilder: (context, index) {
-                  return groupTile(
-                    userName,
-                    listSnapshot!.docs[index]['groupId'],
-                    listSnapshot!.docs[index]['groupName'],
-                    listSnapshot!.docs[index]['admin'],
-                    listSnapshot!.docs[index]['isPrivate'],
-                    listSnapshot!.docs[index]['enrollKey'],
-                  );
-                },
-              )
-            : Container();
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: listSnapshot != null ? listSnapshot!.docs.length : 0,
+      itemBuilder: (context, index) {
+        return groupTile(
+          userName,
+          listSnapshot!.docs[index]['groupId'],
+          listSnapshot!.docs[index]['groupName'],
+          listSnapshot!.docs[index]['admin'],
+          listSnapshot!.docs[index]['isPrivate'],
+          listSnapshot!.docs[index]['enrollKey'],
+          listSnapshot!.docs[index]['members'],
+        );
+      },
+    );
   }
 
   joinedOrNot(String userName, String groupId, String groupName, String admin,
@@ -183,7 +185,7 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Widget groupTile(String userName, String groupId, String groupName,
-      String admin, bool isPrivate, String enrollKey) {
+      String admin, bool isPrivate, String enrollKey, List<dynamic> members) {
     // function to check whether user already exists in group
     joinedOrNot(userName, groupId, groupName, admin, isPrivate);
     return ListTile(
@@ -199,62 +201,55 @@ class _SearchPageState extends State<SearchPage> {
       title:
           Text(groupName, style: const TextStyle(fontWeight: FontWeight.w600)),
       subtitle: Text(
-          "Admin: ${getName(admin)} ${isPrivate ? "(Private)" : "Public"} "),
+          "Admin: ${getName(admin)} ${isPrivate ? "(Private)" : "Public"}"),
       trailing: InkWell(
-        onTap: () async {
-          if (isPrivate && isJoined == false) {
-            showEnrollDialog(context, groupId, userName, groupName, enrollKey);
-
-            // } else {
-            //   await DatabaseService(uid: user!.uid)
-            //       .toggleGroupJoin(groupId, userName, groupName);
-            //   if (isJoined) {
-            //     // setState(() {
-            //     //   isJoined = !isJoined;
-            //     // });
-            //     showSnackbar(
-            //         context, Colors.green, "Successfully joined he group");
-            //     Future.delayed(const Duration(seconds: 2), () {
-            //       nextScreen(
-            //           context,
-            //           ChatPage(
-            //               groupId: groupId,
-            //               groupName: groupName,
-            //               userName: userName));
-            //     });
-            //   } else {
-            //     // setState(() {
-            //     //   isJoined = !isJoined;
-            //     //   showSnackbar(context, Colors.red, "Left the group $groupName");
-            //     // });
-            //   }
-          }
-        },
-        child: isJoined
-            ? Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: Colors.black,
-                  border: Border.all(color: Colors.white, width: 1),
-                ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: const Text(
-                  "Joined",
-                  style: TextStyle(color: Colors.white),
-                ),
-              )
-            : Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: Theme.of(context).primaryColor,
-                ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: const Text("Join Now",
-                    style: TextStyle(color: Colors.white)),
-              ),
-      ),
+          onTap: () async {
+            if (!isUserJoind(user!.uid, members)) {
+              if (isPrivate == true) {
+                showEnrollDialog(
+                    context, groupId, userName, groupName, enrollKey);
+              } else {
+                await DatabaseService(uid: user!.uid)
+                    .toggleGroupJoin(groupId, userName, groupName);
+                getListGroup();
+                showSnackbar(
+                    context, Colors.green, "Successfully joined he group");
+                Future.delayed(const Duration(seconds: 1), () {
+                  nextScreen(
+                      context,
+                      ChatPage(
+                          groupId: groupId,
+                          groupName: groupName,
+                          userName: userName));
+                });
+              }
+            }
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: isUserJoind(user!.uid, members)
+                  ? Colors.black
+                  : Theme.of(context).primaryColor,
+              border: Border.all(color: Colors.white, width: 1),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Text(
+              isUserJoind(user!.uid, members) ? "Joined" : "Join",
+              style: TextStyle(color: Colors.white),
+            ),
+          )
+          // : Container(
+          //     decoration: BoxDecoration(
+          //       borderRadius: BorderRadius.circular(10),
+          //       color: Theme.of(context).primaryColor,
+          //     ),
+          //     padding:
+          //         const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          //     child: const Text("Join Now",
+          //         style: TextStyle(color: Colors.white)),
+          //   ),
+          ),
     );
   }
 
@@ -318,9 +313,9 @@ class _SearchPageState extends State<SearchPage> {
                       await DatabaseService(uid: user!.uid)
                           .toggleGroupJoin(groupId, userName, groupName)
                           .whenComplete(() {
-                        Navigator.of(context).pop();
                         showSnackbar(
                             context, Colors.green, "Join successfully.");
+                        getListGroup();
                       });
                       Future.delayed(const Duration(seconds: 2), () {
                         nextScreen(
